@@ -1,0 +1,5 @@
+---
+- hosts: concourse_webs
+  become: yes
+  roles:
+    - role: ../../ansible-role-concourse-web

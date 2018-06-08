@@ -20,8 +20,6 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 
 Tags
 ----
-- require
-- download
 - apply
 - configure
 - initialize
@@ -34,7 +32,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: mjcramer.cassandra, x: 42 }
+         - { role: mjcramer.postgresql, x: 42 }
 
 License
 -------

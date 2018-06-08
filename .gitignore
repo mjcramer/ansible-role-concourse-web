@@ -1,0 +1,5 @@
+# Ignore these files
+.idea
+*.iml
+**/.vagrant
+*.retry

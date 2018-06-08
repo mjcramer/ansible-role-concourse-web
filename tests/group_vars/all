@@ -1,0 +1,12 @@
+---
+base_home_dir: /opt
+base_conf_dir: /etc
+base_log_dir: /var/log
+base_lib_dir: /var/lib
+base_run_dir: /var/run
+base_daemon_dir: /usr/local/sbin
+base_script_dir: /usr/local/bin
+download_dir: /var/cache
+
+apache_mirror: http://mirrors.sonic.net/apache
+jvm_provider: openjdk
