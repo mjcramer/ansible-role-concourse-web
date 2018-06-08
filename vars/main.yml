@@ -1,0 +1,27 @@
+# roles/cassandra/vars/main.yml
+---
+concourse:
+  local_archive: "{{ download_dir }}/{{ concourse_archive }}"
+  remote_archive: "{{ lookup('env','concourse_DOWNLOAD_PATH') | default(concourse_download_path, true) }}/{{ concourse_archive }}"
+  home_dir: "{{ base_home_dir }}/concourse"
+  conf_dir: "{{ base_conf_dir }}/concourse"
+  log_dir: "{{ base_log_dir }}/concourse"
+  lib_dir: "{{ base_lib_dir }}/concourse"
+  run_dir: "{{ base_run_dir }}/concourse"
+
+#concourse_ansible_system   : "{{ ansible_system | lower }}"
+#concourse_binary_file      : "concourse_{{ concourse_ansible_system }}_amd64_{{ concourse_version }}"
+#
+#concourse_fly                 : "{{ concourse_bin_dir }}/fly -t manage"
+##concourse_download_url     : "https://github.com/concourse/bin/releases/download/{{ concourse_version }}/concourse__amd64"
+## https://github.com/concourse/bin/releases/download/v2.5.1-rc.26/concourse_linux_amd64
+#concourse_download_rc_url  : "https://github.com/concourse/bin/releases/download/{{ concourse_version }}/concourse_{{ concourse_ansible_system }}_amd64"
+## https://github.com/concourse/concourse/releases/download/v2.5.0/concourse_linux_amd64
+#concourse_download_fr_url  : "https://github.com/concourse/concourse/releases/download/{{ concourse_version }}/concourse_{{ concourse_ansible_system }}_amd64"
+#
+#concourse_worker_position  : "{{ groups[concourse_worker_group].index(inventory_hostname)| default(0) }}"
+#
+### MacOSx stuff
+#concourse_launchd_path     : "/Library/LaunchDaemons"
+#concourse_launchd_web      : "com.github.ahelal.concourse.web"
+#concourse_launchd_worker   : "com.github.ahelal.concourse.worker"

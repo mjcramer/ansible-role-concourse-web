@@ -1,0 +1,15 @@
+# roles/cassandra/tasks/check.yml
+---
+- name: check | port
+  wait_for:
+    port: "{{ cassandra_config_native_transport_port }}"
+    host: "{{ ansible_default_ipv4['address'] }}"
+    delay: 1
+  when: "cluster_interface is not defined"
+
+- name: check | port
+  wait_for:
+    port: "{{ cassandra_config_native_transport_port }}"
+    host: "{{ hostvars[inventory_hostname]['ansible_'+cluster_interface]['ipv4']['address'] }}"
+    delay: 1
+  when: "cluster_interface is defined"

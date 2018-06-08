@@ -1,0 +1,86 @@
+# roles/concourse/tasks/apply.yml
+---
+- name: apply | add group
+  group:
+    name: "{{ concourse_group }}"
+    system: true
+    state: present
+
+- name: apply | add user
+  user:
+    name: "{{ concourse_user}}"
+    group: "{{ concourse_group }}"
+    system: true
+    createhome: no
+    home: "{{ concourse.home_dir }}"
+    state: present
+
+- name: apply | create folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ concourse_user }}"
+    group: "{{ concourse_group }}"
+  with_items:
+    - "{{ concourse.home_dir }}"
+    - "{{ concourse.conf_dir }}"
+    - "{{ concourse.log_dir }}"
+    - "{{ concourse.lib_dir }}"
+
+- name: apply | download archive
+  get_url:
+    url: "{{ concourse.remote_archive }}"
+    dest: "{{ concourse.local_archive }}"
+    checksum: "{{ concourse_download_checksum }}"
+    mode: 0644 
+    force: no
+  when: concourse.remote_archive | match("^http.*$")
+  tags:
+    - download
+
+- name: apply | copy from local
+  copy:
+    src: "{{ concourse.remote_archive }}"
+    dest: "{{ concourse.local_archive }}"
+  when: concourse.remote_archive | match("^(?!http).*$")
+
+- name: apply | copy to home
+  copy:
+    remote_src: True
+    src: "{{ concourse.local_archive }}"
+    dest: "{{ concourse.home_dir/ }}"
+
+#- name: apply | create symlink
+#  file:
+#    src: "{{ base_home_dir }}/{{ concourse_name }}"
+#    dest: "{{ concourse.home_dir }}"
+#    owner: "{{ concourse_user }}"
+#    group: "{{ concourse_group}}"
+#    state: link
+#
+#
+#- name: Install | Check Concourse archive stat
+#  stat:
+#    path="{{ concourse_bin_dir }}/{{ concourse_binary_file }}"
+#  register: concourse_binary_file_stat
+#
+#- name: Install | Download Concourse CI
+#  get_url:
+#    url="{{ concourse_download_url }}"
+#    dest="{{ concourse_bin_dir }}/{{ concourse_binary_file }}"
+#    mode=0755
+#  become_user: "{{ concourse_user }}"
+#  register: concourse_get
+#  when: concourse_binary_file_stat.stat.exists == False
+#  notify:
+#   - restart concourse-worker
+#   - restart concourse-web
+#
+#- name: Install | Concourse link binary
+#  file:
+#    src="{{ concourse_bin_dir }}/{{ concourse_binary_file }}"
+#    dest="{{ concourse_bin_dir }}/concourse"
+#    state="link"
+#  notify:
+#   - restart concourse-worker
+#   - restart concourse-web

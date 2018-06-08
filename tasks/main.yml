@@ -1,0 +1,53 @@
+---
+#- import_tasks: apply.yml
+#  tags:
+#    - apply
+
+
+
+#- include: configure.yml
+#  tags:
+#    - configure
+#
+#- include: initialize.yml
+#  tags:
+#    - initialize
+#
+#- include: check.yml
+#  tags:
+#    - check
+
+
+
+
+#
+#- name: Do some checks
+#  include: checks.yml
+#
+#- name: Kernel upgrade
+#  include: kernel_update.yml
+#  when: "ansible_os_family == 'Debian'"
+#
+#- name: Common tasks
+#  include: common_nix.yml
+#  when: "ansible_system == 'Linux' or  ansible_system == 'Darwin'"
+#
+#- name: Install tasks
+#  include: install_nix.yml
+#  when: "ansible_system == 'Linux' or  ansible_system == 'Darwin'"
+#
+#- name: Manage web node
+#  include: web_nix.yml
+#  when: "groups[concourse_web_group] is defined and inventory_hostname in groups[concourse_web_group] and (ansible_system == 'Linux' or ansible_system == 'Darwin')"
+#
+#- name: Manage worker node
+#  include: worker_nix.yml
+#  when: "groups[concourse_worker_group] is defined and inventory_hostname in groups[concourse_worker_group] and (ansible_system == 'Linux' or ansible_system == 'Darwin')"
+#
+#- name: Flush handlers
+#  meta: flush_handlers
+#
+#- name: Manage Teams & Pipelines
+#  include: manage/main.yml
+#  when: (concourse_manage_pipelines or concourse_manage_teams) and groups[concourse_web_group] is defined and inventory_hostname in groups[concourse_web_group] and (ansible_system == 'Linux' or ansible_system == 'Darwin')
+#  tags: ["manage"]

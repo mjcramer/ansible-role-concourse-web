@@ -1,0 +1,51 @@
+# roles/cassandra/tasks/initialize.yml
+---
+- name: initialize | create data folders
+  file:
+    path: "{{ item.name }}/cassandra"
+    state: directory
+    owner: "{{ cassandra_user }}"
+    group: "{{ cassandra_group }}"
+  with_items: "{{ data_devices | default(omit) }}"
+  when: "data_devices is defined and data_devices"
+
+- meta: flush_handlers
+
+- name: initialize | start cassandra
+  service: 
+    name: cassandra
+    enabled: yes
+    state: started
+
+- name: initialize | packages
+  pip:
+    name: python-consul
+    state: present
+
+#- name: initialize | service definition
+#  consul:
+#    host: "{{ ansible_default_ipv4.address }}"
+#    port: "{{ consul_http_port | default(8500) }}"
+#    service_name: cassandra
+#    service_port: "{{ cassandra_config_native_transport_port }}"
+#    interval: 60s
+#    script: "nc -z {{ ansible_default_ipv4.address }} {{ cassandra_config_native_transport_port }}"
+#    tags:
+#      - storage
+#  when: cluster_interface is not defined
+#
+#- name: initialize | service definition
+#  consul:
+#    host: "{{ hostvars[inventory_hostname]['ansible_'+cluster_interface]['ipv4']['address'] }}"
+#    port: "{{ consul_http_port | default(8500) }}"
+#    service_name: cassandra
+#    service_port: "{{ cassandra_config_native_transport_port }}"
+#    interval: 60s
+#    script: "nc -z {{ hostvars[inventory_hostname]['ansible_'+cluster_interface]['ipv4']['address'] }} {{ cassandra_config_native_transport_port }}"
+#    tags:
+#      - storage
+#  when: cluster_interface is defined
+
+
+
+#  jemalloc shared library could not be preloaded to speed up memory allocations

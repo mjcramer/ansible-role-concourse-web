@@ -1,0 +1,90 @@
+---
+
+- name: web | Concourse web start script config
+  template:
+    src="concourse-web.j2"
+    dest="{{ concourse_bin_dir }}/concourse-web"
+    mode=0755
+  notify:
+    - restart concourse-web
+
+- debug:
+    var=concourse_web_options_combined['CONCOURSE_SESSION_SIGNING_KEY']
+
+- name: web | Copy session public key
+  copy:
+    content="{{ concourse_key_session_public }}"
+    dest="{{ concourse_web_options_combined['CONCOURSE_SESSION_SIGNING_KEY'] }}.pub"
+    mode="0644"
+    owner="{{ concourse_user }}"
+    group="{{ concourse_group }}"
+  notify:
+    - restart concourse-web
+
+- name: web | Copy session private key
+  copy:
+    content="{{ concourse_key_session_private }}"
+    dest="{{ concourse_web_options_combined['CONCOURSE_SESSION_SIGNING_KEY'] }}"
+    mode="0600"
+    owner="{{ concourse_user }}"
+    group="{{ concourse_group }}"
+  no_log: True
+  notify:
+    - restart concourse-web
+
+- name: web | Copy tsa private key
+  copy:
+    content="{{ concourse_key_tsa_private }}"
+    dest="{{ concourse_web_options_combined['CONCOURSE_TSA_HOST_KEY'] }}"
+    mode="0600"
+    owner="{{ concourse_user }}"
+    group="{{ concourse_group }}"
+  no_log: True
+  notify:
+    - restart concourse-web
+
+- name: web | Create authorized key for tsa
+  authorized_key:
+    user: "{{ concourse_user }}"
+    key: "{{ item.public }}"
+    path: "{{ concourse_web_options_combined['CONCOURSE_TSA_AUTHORIZED_KEYS'] }}"
+    manage_dir: no
+  with_items: "{{ concourse_worker_keys }}"
+  notify:
+   - restart concourse-web
+
+- name: web | Templating concourse web start init script (linux)
+  template:
+    src="concourse-web-init.sh.j2"
+    dest="/etc/init.d/concourse-web"
+    mode=0755
+  notify:
+   - reload systemd
+   - restart concourse-web
+  when: "ansible_system == 'Linux'"
+
+- name: web | Ensure Concourse web is running and Starts on boot (linux)
+  service:
+    name="concourse-web"
+    state="started"
+    enabled=True
+  ignore_errors: "{{ concourse_ignore_errors }}"
+  when: "ansible_system == 'Linux'"
+
+- name: web | Templating concourse web start launchd plist (macOSx)
+  template:
+    src="{{ concourse_launchd_web }}.plist.j2"
+    dest="{{ concourse_launchd_path }}/{{ concourse_launchd_web }}.plist"
+    mode=0750
+    owner="root"
+    group="wheel"
+    validate='plutil %s'
+  notify:
+   - restart concourse-web
+  register: launchd_template
+  when: "ansible_system == 'Darwin'"
+
+- name: web | Ensure Concourse web is running and Starts on boot (macOSx)
+  shell: launchctl load -w {{ concourse_launchd_path }}/{{ concourse_launchd_web }}.plist && launchctl start {{ concourse_launchd_web }}
+  changed_when: False # since no way to detect if it started or not
+  when: "ansible_system == 'Darwin'"

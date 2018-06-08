@@ -1,0 +1,25 @@
+# roles/concourse-web/defaults/main.yml
+---
+# Server deployment parameters - these control how concourse is deployed
+concourse_version: "3.6.0"
+concourse_name: "concourse"
+concourse_archive: "{{ concourse_name }}_linux_amd64"
+concourse_download_path: "https://github.com/concourse/concourse/releases/download/v{{ concourse_version }}"
+concourse_download_checksum: "sha1:d6559d61da5921be4b23e8044aecd056d556147e"
+concourse_user: concourse
+concourse_group: cicd
+
+concourse_nofile: 1048576
+concourse_nproc: 65535
+
+# Server environment configuration - this controls how concourse server is run
+concourse_jvm_heap_init: 256m
+concourse_jvm_heap_max: 512m
+
+# Server configuration parameters - this controls the concourse server configuraiton
+concourse_config_data_dirs:
+  - "{{ base_lib_dir }}/concourse/data"
+concourse_config_native_transport_port: 9042
+concourse_config_storage_port: 7000
+concourse_config_rpc_port: 9160
+concourse_config_endpoint_snitch: SimpleSnitch

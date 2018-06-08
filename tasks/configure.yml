@@ -1,0 +1,81 @@
+# roles/cassandra/tasks/configure.yml
+---
+
+
+- postgresql_db:
+    name: atc
+
+- postgresql_user:
+    db: acme
+    name: django
+    password: ceec4eif7ya
+    priv: "CONNECT/products:ALL"
+
+
+- name: configure | set ulimits
+  template:
+    src: limits.conf.j2
+    dest: /etc/security/limits.d/90-cassandra.conf
+    mode: 600
+
+- name: configure | create exec script
+  template:
+    src: wrapper.sh.j2
+    dest: "{{ base_daemon_dir }}/cassandra-service.sh"
+    mode: 0755
+
+- name: configure | create systemd configuration
+  template: 
+    src: systemd.service.j2 
+    dest: "{{ systemd_service_dir }}/cassandra.service"
+    mode: 0644
+  notify: 
+    - reload systemd
+
+#- name: configure | create environment configuration
+#  template:
+#    src: environment.j2
+#    dest: "{{ cassandra.env_file }}"
+#  notify:
+#    - restart cassandra
+
+- name: configure | copy files
+  command: "cp {{ item.name }} {{ cassandra.conf_dir }}"
+  args:
+    chdir: "{{ item.dir }}"
+    creates: "{{ cassandra.conf_dir }}/{{ item.name }}"
+  with_items:
+    - dir: "{{ cassandra.home_dir }}/bin"
+      name: cassandra.in.sh
+    - dir: "{{ cassandra.home_dir }}/conf"
+      name: cassandra-env.sh
+    - dir: "{{ cassandra.home_dir }}/conf"
+      name: jvm.options
+    - dir: "{{ cassandra.home_dir }}/conf"
+      name: logback.xml
+
+- name: configure | java home
+  lineinfile: 
+    dest: "{{ cassandra.conf_dir }}/cassandra.in.sh" 
+    regexp: '\s*#*\s*export JAVA_HOME=.*'
+    line: "export JAVA_HOME={{ java_home }}"
+  notify:
+    - restart cassandra
+
+- name: configure | server configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ cassandra.conf_dir}}/{{ item }}"
+    owner: "{{ cassandra_user }}"
+    group: "{{ cassandra_group }}"
+  notify:
+    - restart cassandra
+  with_items:
+    - cassandra.yaml
+    - cassandra-rackdc.properties
+
+- name: configure | cqlsh script
+  template:
+    src: cqlsh.j2
+    dest: "{{ base_script_dir }}/cqlsh"
+    mode: 0755
